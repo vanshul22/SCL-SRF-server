@@ -1,7 +1,7 @@
 const express = require('express');
 const app = express();
 const cors = require('cors');
-var db = require('./database');
+const db = require('./database');
 'use strict';
 
 // Solve the CORS error from here
@@ -29,10 +29,10 @@ app.post("/registeruser", (req, res) => {
     var sql = `INSERT INTO register_student (name, email, mobile, cource) VALUES ("${name}", "${email}", "${mobile}", "${cource}")`;
 
     // Saving data into mySQL database from these lines...
-    query(sql, function (err, result) {
+    db.query(sql, function (err, result) {
         if (err) throw err;
         console.log('Record Inserted');
-        console.log('Success', 'Data added successfully!');
+        console.log('Success,', 'Data added successfully!');
     });
     res.send("User registered.");
 });
@@ -49,7 +49,7 @@ app.post("/signup", (req, res) => {
     var sql = `INSERT INTO signup (name, email, mobile, password) VALUES ("${name}", "${email}", "${mobile}", "${password}")`;
 
     // Saving data into mySQL database from these lines...
-    query(sql, function (err, result) {
+    db.query(sql, function (err, result) {
         if (err) throw err;
         console.log('Record Inserted');
         console.log('Success', 'Data added successfully!');
