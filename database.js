@@ -3,7 +3,7 @@ var conn = mysql.createConnection({
     host: "localhost",
     user: "root",
     password: "",
-    database: "scl_db",
+    database: "SCL_DB",
     port: process.env.PORT
 });
 
