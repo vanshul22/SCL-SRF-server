@@ -2,6 +2,7 @@ const express = require('express');
 const app = express();
 const cors = require('cors');
 const db = require('./database');
+const bcrypt = require('bcryptjs');
 'use strict';
 
 // Solve the CORS error from here
@@ -25,37 +26,48 @@ app.post("/registeruser", (req, res) => {
     let mobile = req.body.mobile;
     let cource = req.body.cource;
 
-    // here register_student is tablename name and it has to be same in db also.
-    var sql = `INSERT INTO register_student (name, email, mobile, cource) VALUES ("${name}", "${email}", "${mobile}", "${cource}")`;
+    try {
+        // here register_student is tablename name and it has to be same in db also.
+        var sql = `INSERT INTO register_student (name, email, mobile, cource) VALUES ("${name}", "${email}", "${mobile}", "${cource}")`;
 
-    // Saving data into mySQL database from these lines...
-    db.query(sql, function (err, result) {
-        if (err) throw err;
-        console.log('Record Inserted');
-        console.log('Success,', 'Data added successfully!');
-    });
-    res.send("User registered.");
+        // Saving data into mySQL database from these lines...
+        db.query(sql, function (err, result) {
+            if (err) throw err;
+            console.log('Record Inserted');
+            console.log('Success,', 'Data added successfully!');
+        });
+        res.send("User registered.");
+    } catch (error) {
+        console.log(error);
+    }
 });
 
 // API to signup users (http://localhost:8080/signup) POST.
-app.post("/signup", (req, res) => {
+app.post("/signup", async (req, res) => {
+    // Creating salt to add in password.
+    const salt = await bcrypt.genSalt(10);
+    // Creating secured hash password.
+    const secretPassword = await bcrypt.hash(req.body.password, salt);
     // taking all data from Body of request...
     let name = req.body.name;
     let email = req.body.email;
     let mobile = req.body.mobile;
-    let password = req.body.password;
+    let password = secretPassword;
 
-    // here users is tablename and it has to be same in db also.
-    var sql = `INSERT INTO users (name, email, mobile, password) VALUES ("${name}", "${email}", "${mobile}", "${password}")`;
-
-    // Saving data into mySQL database from these lines...
-    db.query(sql, (err, result) => {
-        if (err) throw err;
-        console.log('Record Inserted');
-        console.log('Success', 'Data added successfully!');
-    });
-    res.send("Signup Successfull");
+    try {
+        // here users is tablename and it has to be same in db also.
+        var sql = `INSERT INTO users (name, email, mobile, password) VALUES ("${name}", "${email}", "${mobile}", "${password}")`;
+        // Saving data into mySQL database from these lines...
+        db.query(sql, (err, result) => {
+            if (err) throw err;
+            console.log('Success:', 'Data added successfully!');
+            res.send("Signup Successfull");
+        });
+    } catch (error) {
+        console.log(error);
+    }
 });
+
 
 // API to login users (http://localhost:8080/login) POST.
 app.post("/login", (req, res) => {
