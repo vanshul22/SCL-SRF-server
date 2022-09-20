@@ -3,7 +3,11 @@ const app = express();
 const cors = require('cors');
 const db = require('./database');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 'use strict';
+
+// Creating JWT secret. try to move this in environment variables.
+const JWT_Secret = "#superiorCodeLabs@";
 
 // Solve the CORS error from here
 app.use(cors({
@@ -68,7 +72,6 @@ app.post("/signup", async (req, res) => {
     }
 });
 
-
 // API to login users (http://localhost:8080/login) POST.
 app.post("/login", (req, res) => {
     // taking all data from Body of request...
@@ -77,7 +80,7 @@ app.post("/login", (req, res) => {
 
     // variable for checking user login status...
     let isLoggedIn = false;
-
+    let authToken;
 
     // here users is tablename and it has to be same in db also.
     const sql = `SELECT * FROM users WHERE email = ?`;
@@ -86,12 +89,25 @@ app.post("/login", (req, res) => {
     db.query(sql, [userEmail], (err, result, fields) => {
         try {
             if (err) throw err;
-            if (userPassword !== result[0].password) { console.log("Password does not matched.") }
-            if (userPassword === result[0].password) { console.log("Password matched successfully"); isLoggedIn = true }
+            if (userPassword !== result[0].password) {
+                console.log("Password does not matched.");
+                isLoggedIn = "invalid password";
+            }
+            if (userPassword === result[0].password) {
+                console.log("Password matched successfully");
+                isLoggedIn = "password matched";
+                // Creating token to send in frontend for authentication.
+                const data = {
+                    users: { id: result[0].id }
+                }
+                authToken = jwt.sign(data, JWT_Secret);
+            }
+
         } catch (error) {
-            console.log("Email is not registered...")
+            console.log("Email is not registered...");
+            isLoggedIn = "invalid email";
         }
-        res.send(isLoggedIn);
+        res.send({ isLoggedIn, authToken });
     });
 });
 
